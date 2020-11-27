@@ -54,7 +54,6 @@ def receive_message(client_socket):
 def receive_user(client_socket, addr, online):
     client_header = client_socket.recv(HEADER_LENGTH)
     if not len(client_header):
-        print("nooo")
         return False
 
     client_length = int(client_header.decode('utf-8').strip())
@@ -94,7 +93,6 @@ if __name__ == '__main__':
                 if user != False:
                     sockets_list.append(client_socket)
                     clients[client_socket] = user
-                    print(str(type(user['data'])))
                     print(str(time.asctime( time.localtime(time.time()) )) + '   Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
                     for user_socket in clients:
                         if user_socket != client_socket:

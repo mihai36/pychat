@@ -24,7 +24,7 @@ if opt == 1:
     cursor.executemany('INSERT INTO users VALUES(?,?);', records)
     db.commit()
     db.close()
-    print("\nUser/s added to database.")
+    print("\nDatabase updated.")
 elif opt == 2:
     with sqlite3.connect("data.db") as db:
         cursor = db.cursor()
@@ -40,7 +40,7 @@ elif opt == 2:
         cursor.execute('DELETE FROM users WHERE username=?;', [usr])
     db.commit()
     db.close()
-    print("\nUser/s removed from database.")
+    print("\nDatabase updated.")
 
 password = "1NJIB*&*Y&H)<MG)&^I(&TF*^$g)*}OPKASD".encode()
 key = hashlib.sha3_256(password).digest()
