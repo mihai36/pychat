@@ -1,39 +1,11 @@
 import socket
 import errno
-import time
 import sys
-import random
-import hashlib
-import string
 from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox
 from getpass import getpass
-from Cryptodome.PublicKey import RSA
-from Cryptodome.Random import get_random_bytes
-from Cryptodome.Cipher import AES, PKCS1_OAEP
-
-class AESmessages:
-    def pad_IV(msg):
-        if len(msg) < 16:
-            while len(msg) % 16 != 0:
-                msg = msg + b' '
-        else:
-            msg = msg[0:16]
-        return msg
-    def pad_msg(msg):
-        while len(msg) % 16 != 0:
-            msg = msg + b' '
-            #random.choice(string.ascii_letters).encode()
-        return msg
-    def encrypt(msg, key, iv, mode):
-        cipher = AES.new(key, mode, AESmessages.pad_IV(iv))
-        ct = cipher.encrypt(AESmessages.pad_msg(msg))
-        return ct
-    def decrypt(ct, key, iv, mode):
-        cipher  = AES.new(key, mode, iv)
-        pt = cipher.decrypt(ct)
-        return pt.rstrip()
+from AES import *
 
 def enc_sk(sk):
     password = b'%Rd6Fpr$5*x(W2^bOI=Jc&kO8>9VyX0N}[@>?<'
@@ -174,7 +146,7 @@ if __name__ == '__main__':
     client_socket.send(password_header + passw)
     
     window = Tk()
-    window.title("Private GroupChat")
+    window.title("Private ChatRoom")
     window.configure(background="black")
     Label (window, text="Encrypted Chat", bg="black", fg="cyan4", font="none 18 bold").grid(row=0, column=0, sticky=W, pady=(10,8), padx=(10,10))
     Label (window, text="Online users: ", bg="black", fg="cyan4", font="none 12 bold").grid(row=0, column=1, sticky=W, pady=(60, 70))

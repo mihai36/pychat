@@ -1,9 +1,32 @@
-import sqlite3
-from Cryptodome.Cipher import AES
-import hashlib
-import os
 import random
 import string
+import hashlib
+from Cryptodome.Cipher import AES
+from Cryptodome.PublicKey import RSA
+from Cryptodome.Random import get_random_bytes
+from Cryptodome.Cipher import AES, PKCS1_OAEP
+
+class AESmessages:
+    def pad_IV(msg):
+        if len(msg) < 16:
+            while len(msg) % 16 != 0:
+                msg = msg + b' '
+        else:
+            msg = msg[0:16]
+        return msg
+    def pad_msg(msg):
+        while len(msg) % 16 != 0:
+            msg = msg + b' '
+            #random.choice(string.ascii_letters).encode()
+        return msg
+    def encrypt(msg, key, iv, mode):
+        cipher = AES.new(key, mode, AESmessages.pad_IV(iv))
+        ct = cipher.encrypt(AESmessages.pad_msg(msg))
+        return ct
+    def decrypt(ct, key, iv, mode):
+        cipher  = AES.new(key, mode, iv)
+        pt = cipher.decrypt(ct)
+        return pt.rstrip()
 
 class AESfiles:
     def pad_IV(msg):
@@ -39,24 +62,3 @@ class AESfiles:
         with open(path, 'wb') as e:
             e.write(pt)
         return pt
-
-
-open("data.db", "w")    
-with sqlite3.connect("data.db") as db:
-    cursor = db.cursor()
-
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users(
-    username VARCHAR(20) PRIMARY KEY,
-    password VARCHAR(100) NOT NULL);
-''')
-
-records = [('john', 'password'), ('guest', 'guest1'), ('anon', 'secret')]
-cursor.executemany('INSERT INTO users VALUES(?,?);',records);
-db.commit()
-db.close()
-
-password = "1NJIB*&*Y&H)<MG)&^I(&TF*^$g)*}OPKASD".encode()
-key = hashlib.sha3_256(password).digest()
-iv = "1234567890123456".encode()
-AESfiles.encrypt("data.db", key, iv, AES.MODE_CBC)
