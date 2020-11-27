@@ -3,6 +3,7 @@ import select
 import time
 import sqlite3
 import hashlib
+import subprocess
 from Cryptodome.Cipher import AES
 
 class AESmessages:
@@ -63,7 +64,6 @@ class AESfiles:
             e.write(pt)
         return pt
 
-
 def login(user, passw):
     with sqlite3.connect("data.db") as db:
         cursor = db.cursor()
@@ -83,7 +83,6 @@ def login(user, passw):
     cursor.execute(find, [(user), (passw)])
     results = cursor.fetchall()
     AESfiles.encrypt("data.db", key, iv, mode)
-
     if results:
         return True
     else:
@@ -131,9 +130,10 @@ def receive_user(client_socket, online):
         print("Bad login for user: " + client.decode())
         return False
 
+
 if __name__ == '__main__':
     HEADER_LENGTH = 10
-    IP = "127.0.0.1"
+    IP = socket.gethostbyname(socket.gethostname())
     PORT = int(input("Input port number: "))
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

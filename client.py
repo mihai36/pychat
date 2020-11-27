@@ -134,7 +134,7 @@ class loginLayout:
         passw = Entry(window, width=18, bg="LightBlue1", font="none 12")
         passw.config(show="*")
         passw.grid(row=4, column=1, sticky=W, pady=(10,0))
-
+        
         def getLogin():
             values['usr'] = user.get()
             values['psw'] = passw.get()
