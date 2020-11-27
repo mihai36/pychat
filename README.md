@@ -1,8 +1,8 @@
 # pychat
 
 * Server side  
-    * python3 generateKeys.py  
-    * python3 generateDB.py  
+    * python3 init.py
+    * python3 maintain.py  
     * python3 script.py  
 
 * Client side  
@@ -10,5 +10,5 @@
 
 
 * Distribute private.pem and receiver.pem to each user for a working end-to-end encrypted chat room.
-* Also the keys and the initialize vectors  for symetric encryption should be changed.
+* Also the keys and the initialize vectors  for symmetric encryption should be changed.
 
