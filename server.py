@@ -112,28 +112,29 @@ def receive_message(client_socket):
         return False
 
 def receive_user(client_socket, online):
-        client_header = client_socket.recv(HEADER_LENGTH)
-        if not len(client_header):
-            return False
+    client_header = client_socket.recv(HEADER_LENGTH)
+    if not len(client_header):
+        return False
 
-        client_length = int(client_header.decode('utf-8').strip())
-        client = client_socket.recv(client_length)
+    client_length = int(client_header.decode('utf-8').strip())
+    client = client_socket.recv(client_length)
 
-        passw_header = client_socket.recv(HEADER_LENGTH)
-        passw_length = int(passw_header.decode('utf-8').strip())
-        passw = client_socket.recv(passw_length)
+    passw_header = client_socket.recv(HEADER_LENGTH)
+    passw_length = int(passw_header.decode('utf-8').strip())
+    passw = client_socket.recv(passw_length)
 
-        succ = login(client.decode(), passw)
-        if succ and client not in online:
-            online.append(client)
-            return {'header': client_header, 'data': client}
-        else:
-            print("Bad login for user: " + client.decode())
-            return False
+    succ = login(client.decode(), passw)
+    if succ and client not in online:
+        online.append(client)
+        return {'header': client_header, 'data': client}
+    else:
+        print("Bad login for user: " + client.decode())
+        return False
+
 if __name__ == '__main__':
     HEADER_LENGTH = 10
     IP = "127.0.0.1"
-    PORT = 65111
+    PORT = int(input("Input port number: "))
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((IP, PORT))
@@ -144,30 +145,28 @@ if __name__ == '__main__':
     print(f'Listening for connections on {IP}:{PORT}...')
     while True:
         read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
-        for notified_socket in read_sockets:
-            if notified_socket == server_socket:
-                client_socket, client_address = server_socket.accept()
-                user = receive_user(client_socket, online)
-                if user is False:
-                    print("wtf")
-                else:
+        try:
+            for notified_socket in read_sockets:
+                if notified_socket == server_socket:
+                    client_socket, client_address = server_socket.accept()
+                    user = receive_user(client_socket, online)
                     sockets_list.append(client_socket)
                     clients[client_socket] = user
                     print(str(time.asctime( time.localtime(time.time()) )) + '   Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
                     for user_socket in clients:
                         if user_socket != client_socket:
                             user_socket.send("+".encode('utf-8') + user['header'] + user['data'])
-            else:
-                message = receive_message(notified_socket)
-                if message is False:
-                    print(str(time.asctime( time.localtime(time.time()) )) +'   Closed connection from: {}'.format(clients[notified_socket]['data'].decode()))
-                    online.remove(clients[notified_socket]['data'])
-                    sockets_list.remove(notified_socket)
-                    for user_socket in clients:
-                        if user_socket != notified_socket:
-                            user_socket.send("-".encode('utf-8') + clients[notified_socket]['header'] + clients[notified_socket]['data'])
-                    del clients[notified_socket]
-                    continue
+                else:
+                    message = receive_message(notified_socket)
+                    if message is False:
+                        print(str(time.asctime( time.localtime(time.time()) )) +'   Closed connection from: {}'.format(clients[notified_socket]['data'].decode()))
+                        online.remove(clients[notified_socket]['data'])
+                        sockets_list.remove(notified_socket)
+                        for user_socket in clients:
+                            if user_socket != notified_socket:
+                                user_socket.send("-".encode('utf-8') + clients[notified_socket]['header'] + clients[notified_socket]['data'])
+                        del clients[notified_socket]
+                        continue
                 user = clients[notified_socket]
                 print(time.asctime( time.localtime(time.time()) ) + "\t" + user['data'].decode('utf-8') + ": " + str(message['ct']))
                 for client_socket in clients:
@@ -177,3 +176,5 @@ if __name__ == '__main__':
                     for notified_socket in exception_sockets:
                         sockets_list.remove(notified_socket)
                         del clients[notified_socket]
+        except:
+            continue

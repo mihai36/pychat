@@ -1,5 +1,4 @@
 import socket
-import select
 import errno
 import time
 import sys
@@ -122,39 +121,47 @@ class loginLayout:
         window = Tk()
         window.title("Symetric Encryption")
         window.configure(background="black")
-        Label (window, text="Username: ", bg="black", fg="cyan4", font="none 12 bold").grid(row=1, column=0, sticky=W, padx=(0, 12))
+        Label (window, text="Server ip: ", bg="black", fg="cyan3", font="none 12 bold").grid(row=1, column=0 ,sticky=W, padx=(0, 12))
+        sip = Entry(window, width=18, bg="LightBlue1", font="none 12")
+        sip.grid(row=1, column=1, sticky=W)
+        Label (window, text="Server port: ", bg="black", fg="cyan3", font="none 12 bold").grid(row=2, column=0 ,sticky=W, padx=(0, 12), pady=(10,0))
+        sport = Entry(window, width=18, bg="LightBlue1", font="none 12")
+        sport.grid(row=2, column=1, sticky=W, pady=(10,0))
+        Label (window, text="Username: ", bg="black", fg="cyan4", font="none 12 bold").grid(row=3, column=0, sticky=W, padx=(0, 12), pady=(45,0))
         user = Entry(window, width=18, bg="LightBlue1", font="none 12")
-        user.grid(row=1, column=1, sticky=W)
-        Label (window, text="Password: ", bg="black", fg="cyan4", font="none 12 bold").grid(row=2, column=0 ,sticky=W, padx=(0, 12))
+        user.grid(row=3, column=1, sticky=W, pady=(45,0))
+        Label (window, text="Password: ", bg="black", fg="cyan4", font="none 12 bold").grid(row=4, column=0 ,sticky=W, padx=(0, 12), pady=(10,0))
         passw = Entry(window, width=18, bg="LightBlue1", font="none 12")
         passw.config(show="*")
-        passw.grid(row=2, column=1, sticky=W)
+        passw.grid(row=4, column=1, sticky=W, pady=(10,0))
 
         def getLogin():
             values['usr'] = user.get()
             values['psw'] = passw.get()
+            values['ip'] = sip.get()
+            values['port'] = sport.get()
             window.quit()
             window.destroy()
-
-        Button(window, text="Login", width=13, bg="cadetblue4", command=getLogin).grid(row=3, column=1, sticky=W, padx=(48, 0), pady=(9,0))
+        
+        Button(window, text="Login", width=13, bg="cadetblue4", command=getLogin).grid(row=5, column=1, sticky=W, padx=(48, 0), pady=(9,0))
         window.mainloop()
-
         username = values['usr']
         password = values['psw']
-
-        return username, password
-
+        ip = values['ip']
+        port = values['port']
+        return username, password, ip, port
 
 if __name__ == '__main__':
     HEADER_LENGTH = 10
-    IP = "127.0.0.1"
-    PORT = 65111
     users = []
     recv = False
+    my_username, my_password, IP, PORT = loginLayout().gui()
+    if my_username == "" or my_password == "" or IP == "" or PORT == "":
+        sys.exit()
+    
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((IP, PORT))
+    client_socket.connect((IP, int(PORT)))
     client_socket.setblocking(False)
-    my_username, my_password = loginLayout().gui()
     username = my_username.encode('utf-8')
     password = b'P2x#a3g@F4zALfds5$cdA(!qad#Dy3Tv&}'
     key = hashlib.sha3_256(password).digest()
@@ -170,7 +177,7 @@ if __name__ == '__main__':
     window.title("Private GroupChat")
     window.configure(background="black")
     Label (window, text="Encrypted Chat", bg="black", fg="cyan4", font="none 18 bold").grid(row=0, column=0, sticky=W, pady=(10,8), padx=(10,10))
-    Label (window, text="Online users: ", bg="black", fg="cyan4", font="none 12 bold").grid(row=0, column=1, sticky=W, pady=(60, 0))
+    Label (window, text="Online users: ", bg="black", fg="cyan4", font="none 12 bold").grid(row=0, column=1, sticky=W, pady=(60, 70))
     online = Text(window, width=9, height=18 ,bg="black", fg="cyan3", font="none 11 bold")
     online.grid(row=1, column=1, sticky=W, padx=(10,10))
     text = Text(window, width=48, height=24 ,bg="black", fg="white")
@@ -219,10 +226,7 @@ if __name__ == '__main__':
                     username_header = client_socket.recv(HEADER_LENGTH)
                     username_length = int(username_header.decode('utf-8').strip())
                     username = client_socket.recv(username_length).decode('utf-8')
-                    try:
-                        users.remove(username)
-                    except:
-                        continue
+                    users.remove(username)
         except IOError as e:
             if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
                 print('Reading error: {}'.format(str(e)))
